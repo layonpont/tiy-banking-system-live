@@ -9,6 +9,7 @@ import tiy.banking.BankAccount;
 import tiy.banking.Customer;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 
 /**
  * Created by localdom on 5/8/2016.
@@ -19,7 +20,10 @@ public class BankSystemController {
     @RequestMapping(path = "/", method = RequestMethod.GET)
     public String getPerson(HttpSession session, Model model) {
         setCommonAttributes(session, model);
-        model.addAttribute("bankList", Bank.retrieveAllBanks());
+        ArrayList<Bank> banks = Bank.retrieveAllBanks();
+        model.addAttribute("bankList", banks);
+
+        System.out.println("number of retrieved banks = " + banks.size());
 
         return "home";
     }

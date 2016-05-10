@@ -93,6 +93,7 @@ public class Bank {
 
         try {
             File currentFolder = new File(".");
+            System.out.println("Current folder = " + currentFolder.getAbsolutePath());
             File[] allFiles = currentFolder.listFiles();
             for (File currentFile : allFiles) {
                 if (currentFile.isFile()) {
@@ -148,6 +149,7 @@ public class Bank {
         for (Customer customer : bankCustomers.values()) {
             totalBalance += customer.getTotalAccountBalance();
         }
+
 
         return totalBalance;
     }
