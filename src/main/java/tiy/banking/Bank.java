@@ -14,7 +14,7 @@ import java.util.Scanner;
  * Created by localdom on 5/6/2016.
  */
 public class Bank {
-    private static int currentBankID = 101;
+    private static int currentBankID = 120;
 
     private String bankID;
     public final static String BANKID_PREFIX = "TIYBANK";
@@ -99,8 +99,10 @@ public class Bank {
                 if (currentFile.isFile()) {
                     String fileName = currentFile.getName();
                     if (fileName.endsWith(".json") && fileName.startsWith(activePrefix)) {
+                        System.out.println("Retrieving bank from " + fileName);
                         String bankID = fileName.substring(0, fileName.lastIndexOf(".json"));
                         Bank currentBank = retrieve(bankID);
+                        System.out.println("Retrieved bank with ID " + currentBank.getBankID());
                         bankList.add(currentBank);
                     }
                 }
@@ -115,6 +117,7 @@ public class Bank {
     public static Bank retrieve(String bankID) {
         Scanner fileScanner = null;
         try {
+            System.out.println("Retrieving bank with ID " + bankID);
             String fileToRetrieve = bankID + ".json";
             fileScanner = new Scanner(new File(fileToRetrieve));
             fileScanner.useDelimiter("\\Z"); // read the input until the "end of the input" delimiter
@@ -122,6 +125,7 @@ public class Bank {
             JsonParser bankParser = new JsonParser();
 
             Bank newBank = bankParser.parse(fileContents, Bank.class);
+            System.out.println("ID of the bank after it was restored: " + newBank.getBankID());
             return newBank;
         } catch (IOException ioException) {
             ioException.printStackTrace();
@@ -180,6 +184,9 @@ public class Bank {
 
     public void setBankID(String bankID) {
         this.bankID = bankID;
+        // make sure we reset the file name we need to save to whenever
+        // we reset the bankID, since the file name is derived from the bankID
+        fileName = bankID + ".json";
     }
 
     public static String getBankidPrefix() {
