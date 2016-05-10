@@ -4,6 +4,7 @@ import jodd.json.JsonParser;
 import jodd.json.JsonSerializer;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -126,8 +127,12 @@ public class Bank {
             Bank newBank = bankParser.parse(fileContents, Bank.class);
             System.out.println("ID of the bank after it was restored: " + newBank.getBankID());
             return newBank;
-        } catch (IOException ioException) {
+        } catch (FileNotFoundException ioException) {
             ioException.printStackTrace();
+            // TODO Implement better exception handling here
+            return null;
+        } catch (Exception exception) {
+            exception.printStackTrace();
             // TODO Implement better exception handling here
             return null;
         } finally {
