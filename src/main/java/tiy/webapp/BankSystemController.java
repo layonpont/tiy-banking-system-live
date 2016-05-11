@@ -9,7 +9,7 @@ import tiy.banking.BankAccount;
 import tiy.banking.Customer;
 
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
+import java.io.FileNotFoundException;
 
 /**
  * Created by localdom on 5/8/2016.
@@ -20,10 +20,10 @@ public class BankSystemController {
     @RequestMapping(path = "/", method = RequestMethod.GET)
     public String getHome(HttpSession session, Model model) {
         setCommonAttributes(session, model);
-        ArrayList<Bank> banks = Bank.retrieveAllBanks();
-        model.addAttribute("bankList", banks);
 
-        System.out.println("number of retrieved banks = " + banks.size());
+        model.addAttribute("myErrorMessage", "This is an error message from the controller!");
+
+        model.addAttribute("bankList", Bank.retrieveAllBanks());
 
         return "home";
     }
@@ -31,10 +31,31 @@ public class BankSystemController {
     @RequestMapping(path = "/customerList", method = RequestMethod.GET)
     public String getCustomerList(HttpSession session, Model model, String bankID) {
         setCommonAttributes(session, model);
-        Bank bank = Bank.retrieve(bankID);
-        model.addAttribute("bank", bank);
-        System.out.println("There are " + bank.getBankCustomers().size() + " customers in the current bank");
-        model.addAttribute("customerList", bank.getBankCustomers().values());
+
+        if (bankID == null || bankID.isEmpty()) {
+            model.addAttribute("myCustomerListErrorMessage", "Bank ID Required");
+            model.addAttribute("bank", new Bank());
+            model.addAttribute("customerList", null);
+        } else if (session.getAttribute("createCustomerError") != null) {
+            model.addAttribute("myCustomerListErrorMessage",
+                                session.getAttribute("createCustomerError"));
+            model.addAttribute("bank", new Bank());
+            model.addAttribute("customerList", null);
+            session.removeAttribute("createCustomerError");
+
+            Bank bank = Bank.retrieve(bankID);
+
+            model.addAttribute("bank", bank);
+            System.out.println("There are " + bank.getBankCustomers().size() + " customers in the current bank");
+            model.addAttribute("customerList", bank.getBankCustomers().values());
+
+        } else {
+            Bank bank = Bank.retrieve(bankID);
+
+            model.addAttribute("bank", bank);
+            System.out.println("There are " + bank.getBankCustomers().size() + " customers in the current bank");
+            model.addAttribute("customerList", bank.getBankCustomers().values());
+        }
         return "customerList";
     }
 
@@ -88,16 +109,24 @@ public class BankSystemController {
     }
 
     @RequestMapping(path = "/create-customer", method = RequestMethod.POST)
-    public String createCustomer(HttpSession session, Model model, String bankID, String firstName, String lastName,
+    public String createCustomer(HttpSession session, Model model, String bankID,
+                                 String firstName, String lastName,
                                 String emailAddress) {
         System.out.println("createCustomer()");
-        setCommonAttributes(session, model);
-        Bank bank = Bank.retrieve(bankID);
 
-        Customer customer = new Customer(firstName, lastName, emailAddress);
-        bank.addCustomer(customer);
+        if (firstName == null || firstName.isEmpty()
+                || lastName == null || lastName.isEmpty()) {
+            session.setAttribute("createCustomerError", "First Name " +
+                    "and Last Name are **both** required!");
+        } else {
+            setCommonAttributes(session, model);
+            Bank bank = Bank.retrieve(bankID);
 
-        bank.save();
+            Customer customer = new Customer(firstName, lastName, emailAddress);
+            bank.addCustomer(customer);
+
+            bank.save();
+        }
 
         return "redirect:/customerList?bankID=" + bankID;
     }
